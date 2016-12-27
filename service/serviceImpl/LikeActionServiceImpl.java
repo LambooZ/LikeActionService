@@ -8,54 +8,53 @@ import org.springframework.stereotype.Service;
 import cn.edu.bjtu.weibo.dao.CommentDAO;
 import cn.edu.bjtu.weibo.dao.UserDAO;
 import cn.edu.bjtu.weibo.dao.WeiboDAO;
-import cn.edu.bjtu.weibo.dao.Impl.UserDAOImpl;
 import cn.edu.bjtu.weibo.service.LikeActionService;
 import cn.edu.bjtu.weibo.service.MessageToMeService;
 
-@Service("LikeActionService")
+@Service("likeActionService")
 public class LikeActionServiceImpl implements LikeActionService{
 	@Autowired
-	private UserDAO udao;
+	private UserDAO userDAO;
 	@Autowired
-	private CommentDAO cdao;
+	private CommentDAO commentDAO;
 	@Autowired
-	private WeiboDAO wdao;	
+	private WeiboDAO weiboDAO;	
 	@Autowired
-	private MessageToMeService service ;
+	private MessageToMeService messageToMeService ;
 
 	public boolean LikeWeiboOrCommentAction(String userId, String weiboOrCommentId,int pageIndex, int numberPerPage) {
 		//判断是给微博还是给评论点赞
 		//给微博
 		if(weiboOrCommentId.startsWith("w")){
 			
-			List<String> WeiboLikeList = wdao.getLikeList(weiboOrCommentId, pageIndex, numberPerPage);//得到所有赞过这条微博的用户id的List
-			String Owner = wdao.getOwner(weiboOrCommentId);//微博的作者
+			List<String> WeiboLikeList = weiboDAO.getLikeList(weiboOrCommentId, pageIndex, numberPerPage);//得到所有赞过这条微博的用户id的List
+			String Owner = weiboDAO.getOwner(weiboOrCommentId);//微博的作者
 			if(WeiboLikeList.contains(userId)) {
 				//WeiboLikeList如果含有点赞的人的userId,说明他点过赞，应该删除
-				wdao.deleteLikeList(weiboOrCommentId, userId);
-				udao.deleteLikeWeibo(userId, weiboOrCommentId);
-				udao.deleteWeiboLikeMe(userId, Owner, weiboOrCommentId);
+				weiboDAO.deleteLikeList(weiboOrCommentId, userId);
+				userDAO.deleteLikeWeibo(userId, weiboOrCommentId);
+				userDAO.deleteWeiboLikeMe(userId, Owner, weiboOrCommentId);
 			}else {
 				//没点赞过，就添加
-				wdao.insertLikeList(weiboOrCommentId, userId);
-				udao.insertLikeWeibo(userId, weiboOrCommentId);
-				udao.insertWeiboLikeMe(userId, Owner, weiboOrCommentId);
-				service.likeMyWeiboInform(userId, Owner, weiboOrCommentId);//发消息
+				weiboDAO.insertLikeList(weiboOrCommentId, userId);
+				userDAO.insertLikeWeibo(userId, weiboOrCommentId);
+				userDAO.insertWeiboLikeMe(userId, Owner, weiboOrCommentId);
+				messageToMeService.likeMyWeiboInform(userId, Owner, weiboOrCommentId);//发消息
 			}
 			return true;
 			//给评论
 		}else if(weiboOrCommentId.startsWith("c")) {
-			List<String> CommentLikeList = cdao.getLikeList(weiboOrCommentId, pageIndex, numberPerPage);//得到所有赞过这条评论的用户id的List
-			String Owner = cdao.getOwner(weiboOrCommentId); //评论的作者
+			List<String> CommentLikeList = commentDAO.getLikeList(weiboOrCommentId, pageIndex, numberPerPage);//得到所有赞过这条评论的用户id的List
+			String Owner = commentDAO.getOwner(weiboOrCommentId); //评论的作者
 			if(CommentLikeList.contains(userId)) {
 				//CommentLikeList如果含有点赞的人的userId,说明他点过赞，应该删除
-				cdao.deleteLikeList(weiboOrCommentId, userId);
-				udao.deleteCommentLikeMe(userId, Owner, weiboOrCommentId);
+				commentDAO.deleteLikeList(weiboOrCommentId, userId);
+				userDAO.deleteCommentLikeMe(userId, Owner, weiboOrCommentId);
 			}else {
 				//没点赞过，就添加
-				cdao.insertLikeList(weiboOrCommentId, userId);
-				udao.insertCommentLikeMe(userId, Owner, weiboOrCommentId);
-				service.likeMyCommentInform(userId, Owner, weiboOrCommentId);//发消息
+				commentDAO.insertLikeList(weiboOrCommentId, userId);
+				userDAO.insertCommentLikeMe(userId, Owner, weiboOrCommentId);
+				messageToMeService.likeMyCommentInform(userId, Owner, weiboOrCommentId);//发消息
 			}
 			return true;
 		}else {
