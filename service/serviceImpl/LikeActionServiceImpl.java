@@ -24,7 +24,7 @@ public class LikeActionServiceImpl implements LikeActionService{
 
 	public boolean LikeWeiboOrCommentAction(String userId, String weiboOrCommentId,int pageIndex, int numberPerPage) {
 		//判断是给微博还是给评论点赞
-		//给微博
+		//给微博点赞
 		if(weiboOrCommentId.startsWith("w")){
 			
 			List<String> WeiboLikeList = weiboDAO.getLikeList(weiboOrCommentId, pageIndex, numberPerPage);//得到所有赞过这条微博的用户id的List
